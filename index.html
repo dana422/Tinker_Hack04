@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Digital Footprint Analyzer</title>
+    <style>
+        body { font-family: Arial; text-align: center; background-color: #f4f4f4; padding: 20px; }
+        .container { background: white; padding: 30px; width: 450px; margin: auto; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        .score { margin: 15px 0; font-size: 18px; font-weight: bold; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+        button:disabled { background: #ccc; }
+        input { margin: 10px 0; }
+        #ai-result { text-align: left; font-size: 14px; color: #444; white-space: pre-wrap; background: #f0f7ff; padding: 15px; border-radius: 5px; border-left: 5px solid #007bff; margin-top: 20px; display: none; }
+        .loading { color: #ff9900; font-weight: bold; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Digital Footprint Analyzer</h1>
+    
+    <form id="mainForm">
+        <input type="file" id="screenshot" accept="image/*" required>
+        <br>
+        <button type="submit" id="btn">Analyze Screenshot</button>
+    </form>
+    
+    <p class="loading" id="loadingMsg">Analyzing... Please wait (Tesseract + AI)</p>
+    <hr>
+
+    <div class="score">Digital Footprint Score: <span id="digitalScore" style="color: blue;">--</span></div>
+    <div class="score">Cyber Security Score: <span id="cyberScore" style="color: green;">--</span></div>
+    <div class="score">Fake Profile Risk: <span id="fakeScore" style="color: red;">--</span></div>
+
+    <div id="ai-result">
+        <strong>AI Detailed Feedback:</strong>
+        <p id="feedbackText"></p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios@1.13.2/dist/axios.min.js"></script>
+<script>
+document.getElementById("mainForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+    
+    const fileInput = document.getElementById("screenshot");
+    const btn = document.getElementById("btn");
+    const loading = document.getElementById("loadingMsg");
+    
+    if (!fileInput.files[0]) return alert("Upload a file!");
+
+    const formData = new FormData();
+    formData.append("screenshot", fileInput.files[0]);
+
+    // UI Updates
+    btn.disabled = true;
+    loading.style.display = "block";
+    document.getElementById("ai-result").style.display = "none";
+
+    try {
+        const response = await axios.post("http://localhost:5000/analyze", formData);
+        const data = response.data;
+
+        // Update Scores
+        document.getElementById("digitalScore").innerText = data.digitalFootprintScore;
+        document.getElementById("cyberScore").innerText = data.cyberSecurityScore;
+        document.getElementById("fakeScore").innerText = data.fakeProfileScore;
+        
+        // Update Feedback Box
+        document.getElementById("feedbackText").innerText = data.feedback;
+        document.getElementById("ai-result").style.display = "block";
+
+    } catch (error) {
+        console.error(error);
+        alert("Server error. Check your terminal.");
+    } finally {
+        btn.disabled = false;
+        loading.style.display = "none";
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Mirror | Audit Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Shadows+Into+Light&display=swap" rel="stylesheet">
+    <style>
+        :root { --ink: #1e293b; --bg-manual: #f8f7f2; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--bg-manual); color: var(--ink); }
+        
+        /* FIRST PAGE: MANUAL STYLE */
+        .handwritten { font-family: 'Shadows Into Light', cursive; }
+        .sketch-card { background: white; border: 2px solid var(--ink); box-shadow: 4px 4px 0px var(--ink); border-radius: 4px; }
+        .sketch-input { border: 2px solid var(--ink); background: transparent; padding: 12px; border-radius: 4px; }
+        .sketch-btn { background: var(--ink); color: white; padding: 15px; border-radius: 4px; font-weight: 800; }
+        
+        /* SECOND PAGE: CRISP DASHBOARD STYLE */
+        .dashboard-bg { background-color: #f1f5f9; color: #0f172a; }
+        .stat-card { background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body id="main-body" class="min-h-screen p-4 flex items-center justify-center transition-colors duration-500">
+
+    <div id="input-page" class="w-full max-w-2xl">
+        <div class="mb-8 text-center">
+            <h1 class="text-4xl font-extrabold uppercase italic">Digital Mirror.</h1>
+            <p class="handwritten text-2xl text-indigo-600 mt-2">How do you look to the world?</p>
+        </div>
+
+        <div class="sketch-card p-8 space-y-6">
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-black uppercase mb-2">Username</label>
+                    <input id="user-input" type="text" placeholder="e.g. @dana_mariyam" class="w-full sketch-input outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-black uppercase mb-2">Social Bio</label>
+                    <input id="bio-input" type="text" placeholder="Describe yourself..." class="w-full sketch-input outline-none">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-black uppercase mb-2">Latest Post Caption</label>
+                <textarea id="caption-input" rows="3" placeholder="Paste your last caption here..." class="w-full sketch-input outline-none resize-none"></textarea>
+            </div>
+
+            <button onclick="runMirror()" class="w-full sketch-btn uppercase tracking-widest hover:bg-indigo-600 transition-colors">Generate Audit Report</button>
+        </div>
+    </div>
+
+    <div id="score-page" class="w-full max-w-5xl hidden animate-in fade-in slide-in-from-top-4 duration-700">
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h2 class="text-2xl font-bold tracking-tight">Audit Executive Summary</h2>
+                <p class="text-slate-500 text-sm" id="timestamp"></p>
+            </div>
+            <button onclick="location.reload()" class="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium hover:bg-slate-50 transition-all">New Analysis</button>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="stat-card p-6 flex flex-col items-center">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Professionalism</span>
+                <div class="w-32 h-32 relative">
+                    <canvas id="profChart"></canvas>
+                </div>
+                <div class="mt-4 text-2xl font-bold" id="prof-val">0%</div>
+            </div>
+
+            <div class="stat-card p-6 flex flex-col items-center">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Creativity</span>
+                <div class="w-32 h-32 relative">
+                    <canvas id="creativeChart"></canvas>
+                </div>
+                <div class="mt-4 text-2xl font-bold" id="creative-val">0%</div>
+            </div>
+
+            <div class="stat-card p-6 flex flex-col items-center">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Uniqueness</span>
+                <div class="w-32 h-32 relative">
+                    <canvas id="uniqueChart"></canvas>
+                </div>
+                <div class="mt-4 text-2xl font-bold" id="unique-val">0%</div>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="stat-card p-6">
+                <h3 class="text-sm font-bold border-b border-slate-100 pb-3 mb-4">Statistical Summary</h3>
+                <div id="feedback-list" class="space-y-4">
+                    </div>
+            </div>
+
+            <div class="stat-card p-6 bg-slate-900 text-white">
+                <h3 class="text-sm font-bold border-b border-slate-700 pb-3 mb-4 text-slate-400">Strategic Recommendations</h3>
+                <p id="advice-text" class="text-sm leading-relaxed text-slate-300"></p>
+                <div class="mt-6 pt-6 border-t border-slate-700">
+                    <div class="flex items-center gap-2">
+                        <div id="risk-dot" class="w-2 h-2 rounded-full"></div>
+                        <span id="risk-level" class="text-[10px] font-bold uppercase tracking-widest"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+     // Track chart instances to prevent "Canvas is already in use" errors
+    let chartInstances = {};
+
+    function runMirror() {
+        const user = document.getElementById('user-input').value.trim();
+        const bio = document.getElementById('bio-input').value;
+        const caption = document.getElementById('caption-input').value;
+
+        if(!user) return alert("Username required for analysis.");
+
+        // 1. BASE LOGIC CALCULATION
+        let prof = 70;
+        if (/(666|69|420)/.test(user)) prof -= 30;
+        if (/\b(killer|dark|devil|savage|queen)\b/i.test(user)) prof -= 20;
+        if (/^[a-zA-Z]+([._][a-zA-Z]+)*$/.test(user)) prof += 20;
+
+        let creative = 30;
+        if (caption.length > 50) creative += 20;
+        const hashtagCount = (caption.match(/#/g) || []).length;
+        if (hashtagCount > 3) creative += 15;
+        if (bio.includes('|') || bio.includes('•')) creative += 10;
+
+        let unique = 40;
+        if (user.length > 10) unique += 20;
+        if (user.replace(/[^0-9]/g, "").length > 3) unique -= 20;
+
+        // 2. ADD DYNAMIC VARIANCE (The "Live" Feel)
+        // Adds/subtracts up to 7% randomly so the numbers shift slightly on every run
+        const getVariance = () => Math.floor(Math.random() * 15) - 7;
+        
+        const scores = {
+            prof: Math.min(100, Math.max(5, prof + getVariance())),
+            creative: Math.min(100, Math.max(5, creative + getVariance())),
+            unique: Math.min(100, Math.max(5, unique + getVariance()))
+        };
+
+        // 3. UI TRANSITION
+        document.getElementById('input-page').classList.add('hidden');
+        document.getElementById('score-page').classList.remove('hidden');
+        document.getElementById('main-body').classList.add('dashboard-bg');
+        document.getElementById('timestamp').innerText = "Audit conducted on " + new Date().toLocaleString();
+
+        // 4. DYNAMIC FEEDBACK GENERATION
+        const feedContainer = document.getElementById('feedback-list');
+        let feedItems = [];
+
+        if (scores.prof > 75) feedItems.push({ label: "AUTHORITY", msg: "High signal-to-noise ratio. Profile commands trust.", color: "text-green-600" });
+        else if (scores.prof < 40) feedItems.push({ label: "RISK", msg: "Handle or content triggers low-credibility filters.", color: "text-red-500" });
+        
+        if (hashtagCount > 8) feedItems.push({ label: "ALGO", msg: "Tag density is high; potential shadow-ban risk.", color: "text-amber-500" });
+        
+        // Random "Insight" to show variety
+        const insights = [
+            "Metadata suggests peak engagement at 6PM.",
+            "Visual consistency score: Optimized.",
+            "Cross-platform sync: Recommended.",
+            "Growth velocity: Stable."
+        ];
+        feedItems.push({ label: "DATA", msg: insights[Math.floor(Math.random() * insights.length)], color: "text-blue-500" });
+
+        feedContainer.innerHTML = feedItems.map(item => `
+            <div class="flex flex-col gap-1 pb-2 border-b border-slate-50">
+                <span class="text-[9px] font-black ${item.color} tracking-tighter">${item.label}</span>
+                <span class="text-xs font-medium text-slate-600">${item.msg}</span>
+            </div>
+        `).join('');
+
+        // 5. STRATEGIC ADVICE
+        // --- Advanced Strategic Advice Logic ---
+const advice = document.getElementById('advice-text');
+const riskLevel = document.getElementById('risk-level');
+const riskDot = document.getElementById('risk-dot');
+
+// Reset classes first
+riskDot.className = "w-2 h-2 rounded-full ";
+
+let reportTitle = "";
+let reportBody = "";
+
+if (scores.prof >= 80 && scores.creative >= 70) {
+    // THE POWER USER
+    reportTitle = "Elite Authority";
+    reportBody = "Your profile sits in the top tier of digital branding. You've balanced corporate-ready professionalism with high-impact creativity. Advice: Start a newsletter or thought-leadership series to capitalize on this trust.";
+    riskLevel.innerText = "Low Risk / High Impact";
+    riskDot.classList.add('bg-blue-500');
+
+} else if (scores.prof < 40) {
+    // THE UNPROFESSIONAL / ANONYMOUS
+    reportTitle = "Reputational Red Flag";
+    reportBody = "Your digital presence is flagged as high-risk for professional settings. The combination of your handle and content suggests an 'anonymous' or 'rebel' persona which may trigger HR filters. Immediate transition to a curated personal brand is advised.";
+    riskLevel.innerText = "Immediate Action Required";
+    riskDot.classList.add('bg-red-500');
+
+} else if (scores.creative < 40 && scores.prof > 60) {
+    // THE "BORING" PROFESSIONAL
+    reportTitle = "The Ghost Resume";
+    reportBody = "Safe, but invisible. Your profile is professional but lacks the 'Creative Spark' needed to stand out in a saturated market. Advice: Use more industry-specific keywords and share 'behind-the-scenes' content to humanize the brand.";
+    riskLevel.innerText = "Compliance Verified";
+    riskDot.classList.add('bg-green-500');
+
+} else if (scores.unique > 80) {
+    // THE ECCENTRIC
+    reportTitle = "Highly Individualized";
+    reportBody = "You have a very high uniqueness score, which is great for creators but risky for corporate roles. You risk being 'too niche.' Advice: Ensure your core skills are clearly stated so your uniqueness doesn't overshadow your utility.";
+    riskLevel.innerText = "Moderate Variance";
+    riskDot.classList.add('bg-amber-500');
+
+} else {
+    // THE BALANCED MIDDLE
+    reportTitle = "Standard Equilibrium";
+    reportBody = "You are currently playing it safe. While there are no red flags, your digital mirror shows a standard profile. Advice: To increase your 'Digital Gravity,' try experimenting with more visual content or a bold bio update.";
+    riskLevel.innerText = "Audit Passed";
+    riskDot.classList.add('bg-slate-400');
+}
+
+advice.innerHTML = `<strong class="block text-white mb-1">${reportTitle}</strong>${reportBody}`;
+
+        // 6. UPDATE TEXT VALUES & RENDER CHARTS
+        document.getElementById('prof-val').innerText = scores.prof + "%";
+        document.getElementById('creative-val').innerText = scores.creative + "%";
+        document.getElementById('unique-val').innerText = scores.unique + "%";
+
+        renderChart("profChart", scores.prof, "#6366f1");
+        renderChart("creativeChart", scores.creative, "#8b5cf6");
+        renderChart("uniqueChart", scores.unique, "#ec4899");
+    }
+
+    function renderChart(id, score, color) {
+        // Destroy existing chart if it exists to allow re-rendering
+        if (chartInstances[id]) {
+            chartInstances[id].destroy();
+        }
+
+        const ctx = document.getElementById(id).getContext('2d');
+        chartInstances[id] = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [score, 100 - score],
+                    backgroundColor: [color, '#f1f5f9'],
+                    borderWidth: 0,
+                }]
+            },
+            options: {
+                cutout: '80%',
+                plugins: { tooltip: { enabled: false } },
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 1500,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+    }
+    </script>
+</body>
+</html>
