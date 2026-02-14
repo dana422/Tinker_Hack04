@@ -1,84 +1,100 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Digital Footprint Analyzer</title>
-    <style>
-        body { font-family: Arial; text-align: center; background-color: #f4f4f4; padding: 20px; }
-        .container { background: white; padding: 30px; width: 450px; margin: auto; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0,0,0,0.1); }
-        h1 { color: #333; }
-        .score { margin: 15px 0; font-size: 18px; font-weight: bold; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
-        button:disabled { background: #ccc; }
-        input { margin: 10px 0; }
-        #ai-result { text-align: left; font-size: 14px; color: #444; white-space: pre-wrap; background: #f0f7ff; padding: 15px; border-radius: 5px; border-left: 5px solid #007bff; margin-top: 20px; display: none; }
-        .loading { color: #ff9900; font-weight: bold; display: none; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digital Mirror</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Shadows+Into+Light&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #f8f7f2;
+        color: #1e293b;
+    }
+
+    .handwritten {
+        font-family: 'Shadows Into Light', cursive;
+    }
+
+    .sketch-card {
+        background: white;
+        border: 2px solid #1e293b;
+        box-shadow: 4px 4px 0px #1e293b;
+        border-radius: 4px;
+    }
+
+    .mode-card {
+        border: 2px solid #1e293b;
+        padding: 30px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: 0.2s ease;
+    }
+
+    .mode-card:hover {
+        background: #1e293b;
+        color: white;
+        transform: translateY(-4px);
+        box-shadow: 4px 4px 0px #1e293b;
+    }
+</style>
 </head>
-<body>
 
-<div class="container">
-    <h1>Digital Footprint Analyzer</h1>
-    
-    <form id="mainForm">
-        <input type="file" id="screenshot" accept="image/*" required>
-        <br>
-        <button type="submit" id="btn">Analyze Screenshot</button>
-    </form>
-    
-    <p class="loading" id="loadingMsg">Analyzing... Please wait (Tesseract + AI)</p>
-    <hr>
+<body class="min-h-screen flex items-center justify-center p-4">
 
-    <div class="score">Digital Footprint Score: <span id="digitalScore" style="color: blue;">--</span></div>
-    <div class="score">Cyber Security Score: <span id="cyberScore" style="color: green;">--</span></div>
-    <div class="score">Fake Profile Risk: <span id="fakeScore" style="color: red;">--</span></div>
+<div class="w-full max-w-3xl text-center">
 
-    <div id="ai-result">
-        <strong>AI Detailed Feedback:</strong>
-        <p id="feedbackText"></p>
+    <!-- Title -->
+    <h1 class="text-5xl font-extrabold uppercase italic">Digital Mirror.</h1>
+    <p class="handwritten text-2xl text-indigo-600 mt-2 mb-10">
+        How do you look to the world?
+    </p>
+
+    <!-- Selection Box -->
+    <div class="sketch-card p-8">
+
+        <h2 class="text-lg font-bold uppercase mb-8">
+            Select Analysis Mode
+        </h2>
+
+        <div class="grid md:grid-cols-2 gap-6">
+
+            <!-- TEXT ANALYZER -->
+            <div class="mode-card"
+                onclick="location.href='index(2).html'">
+
+                <h3 class="font-extrabold text-lg mb-2">
+                    Profile Analysis
+                </h3>
+
+                <p class="text-sm opacity-80">
+                    Analyze username, bio and captions for professionalism,
+                    creativity and uniqueness.
+                </p>
+            </div>
+
+            <!-- SCREENSHOT ANALYZER -->
+            <div class="mode-card"
+                onclick="location.href='indexai.html'">
+
+                <h3 class="font-extrabold text-lg mb-2">
+                    Screenshot Analysis ( Upload Screenshot )
+                </h3>
+
+                <p class="text-sm opacity-80">
+                    Upload LinkedIn / Social Media screenshot and extract
+                    insights automatically.
+                </p>
+            </div>
+
+        </div>
+
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/axios@1.13.2/dist/axios.min.js"></script>
-<script>
-document.getElementById("mainForm").addEventListener("submit", async function(event) {
-    event.preventDefault();
-    
-    const fileInput = document.getElementById("screenshot");
-    const btn = document.getElementById("btn");
-    const loading = document.getElementById("loadingMsg");
-    
-    if (!fileInput.files[0]) return alert("Upload a file!");
-
-    const formData = new FormData();
-    formData.append("screenshot", fileInput.files[0]);
-
-    // UI Updates
-    btn.disabled = true;
-    loading.style.display = "block";
-    document.getElementById("ai-result").style.display = "none";
-
-    try {
-        const response = await axios.post("http://localhost:5000/analyze", formData);
-        const data = response.data;
-
-        // Update Scores
-        document.getElementById("digitalScore").innerText = data.digitalFootprintScore;
-        document.getElementById("cyberScore").innerText = data.cyberSecurityScore;
-        document.getElementById("fakeScore").innerText = data.fakeProfileScore;
-        
-        // Update Feedback Box
-        document.getElementById("feedbackText").innerText = data.feedback;
-        document.getElementById("ai-result").style.display = "block";
-
-    } catch (error) {
-        console.error(error);
-        alert("Server error. Check your terminal.");
-    } finally {
-        btn.disabled = false;
-        loading.style.display = "none";
-    }
-});
-</script>
 
 </body>
 </html>
