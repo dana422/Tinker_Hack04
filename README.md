@@ -45,9 +45,8 @@ We solve this by providing an objective, AI-driven "Mirror." Our platform uses a
 **Installation**
 ```bash
 # Clone the repository
-git clone [https://github.com/](https://github.com/)[your-username]/digital-mirror.git
+https://github.com/dana422/Tinker_Hack04
 
-# Navigate to the directory
 ```
 **Screenshots**
 
