@@ -6,12 +6,12 @@
 * **Member 1:** Arya Chandran E - Rajiv Gandhi Institute of Technology Kottayam  
 * **Member 2:** Dana Mariyam N - Rajiv Gandhi Institute of Technology Kottayam
 
-**Hosted Project Link:** [Link to your GitHub Pages or Vercel Deployment]
+**Hosted Project Link:** [https://tinker-sepia.vercel.app/]
 
 ---
 
 ### Project Description
-Digital Mirror is a multimodal AI-powered audit tool that acts as a "second pair of eyes" for your online brand. By analyzing social media bios, handles, and profile screenshots using Gemini 1.5 Flash, it quantifies your digital presence into professional metrics and provides immediate, actionable feedback to improve your employability and social standing.
+Digital Mirror is a multimodal AI-powered audit tool that acts as a "second pair of eyes" for your online brand. By analyzing social media bios, handles, and profile screenshots using Gemini 2.5 Flash, it quantifies your digital presence into professional metrics and provides immediate, actionable feedback to improve your employability and social standing.
 
 ### The Problem Statement
 In today's digital age, your social media profile is your unofficial resume. Recruiters, clients, and peers often form a definitive first impression based on your "Digital Footprint." However, most individuals suffer from **Digital Blind Spots**—they are unaware that unprofessional handles, "red-flag" keywords, or inconsistent bio messaging are causing them to be filtered out by automated systems or human recruiters before they even get an interview.
@@ -56,4 +56,5 @@ Homepage to choose whether to upload screenshot and have an analysis or to manua
 ![Screenshot2](https://github.com/aryachndrn/Tinker_Hack03/blob/main/Screenshot%202026-02-14%20064237.png)
 The Digital Mirror exposes "Hidden Red Flags" that often trigger automated HR filters. Here, the AI identifies a high-risk 'rebel' persona, providing the user with the clarity needed to transition toward a curated personal brand.
 
-![Screenshot3](https://github.com/aryachndrn/Tinker_Hack03/blob/main/WhatsApp%20Image%202026-02-14%20at%207.55.51%20AM.jpeg) 
+![Screenshot3](https://github.com/aryachndrn/Tinker_Hack03/blob/main/WhatsApp%20Image%202026-02-14%20at%207.55.51%20AM.jpeg)
+This is a web-based Digital Footprint Analyzer that evaluates an uploaded screenshot and provides scores for digital presence, cybersecurity, and fake profile risk, along with AI-generated feedback.
